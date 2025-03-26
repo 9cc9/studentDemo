@@ -51,6 +51,7 @@ class ViewController: UIViewController {
         setupConstraints()
         setupTableView()
         setupActions()
+        inputTextField.delegate = self
     }
     
     private func setupUI() {
@@ -120,6 +121,20 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
 
 // 自定义消息Cell
 class MessageCell: UITableViewCell {
+    // 添加头像视图
+    private let avatarImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.layer.cornerRadius = 20 // 设置圆形头像
+        imageView.clipsToBounds = true
+        imageView.backgroundColor = .systemGray4 // 默认背景色
+        imageView.contentMode = .scaleAspectFill
+        // 设置默认头像图片
+        imageView.image = UIImage(systemName: "person.circle.fill")
+        imageView.tintColor = .systemGray2
+        return imageView
+    }()
+    
     private let bubbleView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -150,13 +165,22 @@ class MessageCell: UITableViewCell {
         backgroundColor = .clear
         
         contentView.addSubview(bubbleView)
+        contentView.addSubview(avatarImageView)
         bubbleView.addSubview(messageLabel)
         
         NSLayoutConstraint.activate([
+            // 头像约束
+            avatarImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+            avatarImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4),
+            avatarImageView.widthAnchor.constraint(equalToConstant: 40),
+            avatarImageView.heightAnchor.constraint(equalToConstant: 40),
+            
+            // 更新气泡约束
             bubbleView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4),
-            bubbleView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            bubbleView.trailingAnchor.constraint(equalTo: avatarImageView.leadingAnchor, constant: -8),
             bubbleView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
             
+            // 消息文本约束保持不变
             messageLabel.topAnchor.constraint(equalTo: bubbleView.topAnchor, constant: 8),
             messageLabel.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor, constant: 12),
             messageLabel.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor, constant: -12),
@@ -166,6 +190,21 @@ class MessageCell: UITableViewCell {
     
     func configure(with message: String) {
         messageLabel.text = message
+    }
+    
+    // 可选：添加设置头像的方法
+    func setAvatar(image: UIImage?) {
+        if let image = image {
+            avatarImageView.image = image
+        }
+    }
+}
+
+// 添加 UITextFieldDelegate 扩展
+extension ViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        sendButtonTapped()
+        return true
     }
 }
 
